@@ -8,4 +8,6 @@ ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
 SCRAPEOPS_KEY = os.getenv("SCRAPEOPS_KEY", "")
 
 if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN не найден в .env файле")
+    raise ValueError("❌ BOT_TOKEN не найден в .env файле!")
+
+print("✅ Конфигурация загружена")
