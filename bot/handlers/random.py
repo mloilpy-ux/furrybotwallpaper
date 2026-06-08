@@ -2,55 +2,24 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 import aiosqlite
-import random
-
 from database.db import DB_PATH
 
 router = Router()
+kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="➡️ Следующее", callback_data="next")],[InlineKeyboardButton(text="❤️ Сохранить", callback_data="save")]])
 
-def get_keyboard():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="➡️ Следующее", callback_data="next_random")]
-    ])
+async def send_random(m):
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT media_url,title FROM content WHERE is_nsfw=0 ORDER BY RANDOM() LIMIT 1")
+        r = await cur.fetchone()
+    if not r: await m.answer("Нет контента"); return
+    url, title = r
+    try:
+        if url.endswith(".mp4"): await m.answer_video(url, caption=title, reply_markup=kb)
+        else: await m.answer_photo(url, caption=title, reply_markup=kb)
+    except: await m.answer_document(url, caption=title, reply_markup=kb)
 
 @router.message(Command("random"))
-async def cmd_random(message: Message):
-    await send_random(message)
+async def cmd(m: Message): await send_random(m)
 
-@router.callback_query(F.data == "next_random")
-async def next_random(callback: CallbackQuery):
-    await send_random(callback.message)
-    await callback.answer()
-
-async def send_random(message: Message):
-    async with aiosqlite.connect(DB_PATH) as db:
-        # Показываем только SFW
-        cursor = await db.execute(
-            "SELECT media_url, title, post_url, is_gif FROM content WHERE is_nsfw=0 ORDER BY RANDOM() LIMIT 1"
-        )
-        result = await cursor.fetchone()
-
-    if not result:
-        await message.answer(
-            "😕 Пока нет контента.\n"
-            "Добавь источники через /add"
-        )
-        return
-
-    media_url, title, post_url, is_gif = result
-
-    caption = f"<b>{title or 'Без названия'}</b>"
-    if post_url:
-        caption += f"\n🔗 <a href=\"{post_url}\">Источник</a>"
-
-    try:
-        if is_gif or media_url.endswith(('.mp4', '.webm', '.gif')):
-            await message.answer_video(media_url, caption=caption, reply_markup=get_keyboard())
-        else:
-            await message.answer_photo(media_url, caption=caption, reply_markup=get_keyboard())
-    except Exception as e:
-        # если не удалось отправить - пробуем как документ
-        try:
-            await message.answer_document(media_url, caption=caption, reply_markup=get_keyboard())
-        except:
-            await message.answer(f"❌ Ошибка: {e}\n{media_url}")
+@router.callback_query(F.data=="next")
+async def nxt(c: CallbackQuery): await send_random(c.message); await c.answer()
