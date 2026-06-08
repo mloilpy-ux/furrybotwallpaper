@@ -31,8 +31,12 @@ async def parse_reddit(url: str, limit: int = 25) -> List[Dict]:
                     return []
                 
                 data = await resp.json()
+                print(f"[REDDIT] JSON keys: {data.keys()}")
+                print(f"[REDDIT] Posts count: {len(data.get('data',{}).get('children',[]))}")
+                if posts:
+                print(f"[REDDIT] First post url: {posts[0]['data'].get('url')}")
                 posts = data.get("data", {}).get("children", [])
-                
+                  
                 results = []
                 for post in posts:
                     pd = post.get("data", {})
