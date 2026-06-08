@@ -9,11 +9,9 @@ router = Router()
 @router.message(Command("parse"))
 async def cmd_parse(message: Message):
     if message.from_user.id != ADMIN_ID:
-        await message.answer("⛔ Только админ")
+        await message.answer("⛔ Только администратор")
         return
-        
-    await message.answer("🔄 Начинаю парсинг источников...")
     
-    added = await parse_and_save_sources()
-    
-    await message.answer(f"✅ Парсинг завершён!\nДобавлено элементов: {added}")
+    await message.answer("🔄 Запускаю парсинг всех источников...")
+    new_items = await parse_and_save_sources()
+    await message.answer(f"✅ Парсинг завершён!\nДобавлено новых медиа: **{new_items}**", parse_mode="Markdown")
