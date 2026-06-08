@@ -11,7 +11,7 @@ async def parse_reddit(url, limit=20):
         
         async with aiohttp.ClientSession() as s:
             # ВОТ ТВОЯ СТРОКА - ИСПРАВЛЕННАЯ
-            async with s.get(proxy, headers={"User-Agent":"Mozilla/5.0"}, timeout=20) as r:
+            async with s.get(f"https://api.reddit.com/r/{sub}/hot.json?limit={limit}", headers={"User-Agent":"Mozilla/5.0"}, timeout=10) as r:
                 if r.status != 200:
                     return []
                 data = await r.json()
