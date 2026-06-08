@@ -1,5 +1,9 @@
 import aiosqlite
 from services.reddit import parse_reddit
+from services.twitter import parse_twitter
+# ...
+elif stype == "twitter":
+    items = await parse_twitter(url)
 from services.telegram import parse_telegram
 from database.db import DB_PATH
 
