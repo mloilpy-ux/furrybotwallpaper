@@ -1,10 +1,8 @@
 import aiohttp
 
-async def parse_reddit(url: str, limit: int = 20):
-    # Используем прокси-инстанс
-    if "reddit.com/r/" in url:
-        sub = url.split("/r/")[1].strip("/")
-        api = f"https://r.jina.ai/http://old.reddit.com/r/{sub}/hot.json?limit={limit}"
+async def parse_reddit(url, limit=20):
+    sub = url.split("/r/")[1].strip("/")
+    api = f"https://libreddit.spike.codes/r/{sub}/hot.json?limit={limit}"
     else:
         return []
     
