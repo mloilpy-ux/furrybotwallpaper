@@ -1,34 +1,49 @@
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
-import aiosqlite, re
+import aiosqlite
+import re
 from database.db import DB_PATH
 from config import ADMIN_ID
 
 router = Router()
 
 @router.message(Command("add"))
-async def add(m: Message):
+async def add_source(m: Message):
     if m.from_user.id != ADMIN_ID:
-        await m.answer("⛔")
+        await m.answer("⛔ Только администратор может добавлять источники.")
         return
+    
     try:
-        url = m.text.split(maxsplit=1)[1]
+        args = m.text.split(maxsplit=1)
+        if len(args) < 2:
+            raise ValueError
+        url = args[1].strip()
     except:
-        await m.answer("Использование: /add ссылка")
+        await m.answer("Использование:\n/add https://reddit.com/r/subreddit\n/add https://t.me/channel")
         return
     
-    t = None
-    if "reddit.com" in url: t = "reddit"
-    elif "t.me" in url or url.startswith("@"): t = "telegram"
-    elif "twitter.com" in url or "x.com" in url: t = "twitter"
-    
-    if not t:
-        await m.answer("❌")
+    # Определяем тип
+    if "reddit.com" in url or "reddit.com/r/" in url:
+        source_type = "reddit"
+    elif "t.me" in url or url.startswith("@"):
+        source_type = "telegram"
+    else:
+        await m.answer("❌ Поддерживаются только Reddit и Telegram на данный момент.")
         return
     
-    name = re.sub(r'https?://[^/]+/', '', url).strip('/')
+    # Красивое имя
+    if source_type == "reddit":
+        name = re.search(r'/r/([^/]+)', url)
+        name = name.group(1) if name else "reddit_source"
+    else:
+        name = re.sub(r'https?://t\.me/|@', '', url).strip('/')
+    
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("INSERT OR IGNORE INTO sources (name, url, type, added_by) VALUES (?,?,?,?)", (name, url, t, m.from_user.id))
+        await db.execute(
+            "INSERT OR IGNORE INTO sources (name, url, type, added_by) VALUES (?,?,?,?)",
+            (name, url, source_type, m.from_user.id)
+        )
         await db.commit()
-    await m.answer(f"✅ {t} добавлен")
+    
+    await m.answer(f"✅ Источник добавлен!\nТип: {source_type}\nНазвание: {name}")
