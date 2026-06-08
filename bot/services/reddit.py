@@ -7,7 +7,7 @@ async def parse_reddit(url, limit=20):
     try:
         sub = url.split("/r/")[1].split("/")[0]
         target = f"https://www.reddit.com/r/{sub}/hot.json?limit={limit}"
-        proxy = f"https://proxy.scrapeops.io/v1/?api_key={KEY}&url={target}" if KEY else target
+        proxy = target
         
         async with aiohttp.ClientSession() as s:
             # ВОТ ТВОЯ СТРОКА - ИСПРАВЛЕННАЯ
