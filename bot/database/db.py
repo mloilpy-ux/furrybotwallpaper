@@ -1,5 +1,5 @@
 import aiosqlite
-from typing import List
+from typing import List, Optional
 
 DB_PATH = "bot_data.db"
 
@@ -28,17 +28,8 @@ async def init_db():
                 is_nsfw INTEGER DEFAULT 0,
                 is_gif INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (source_id) REFERENCES sources (id)
+                FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE CASCADE
             )
         """)
         await db.commit()
-        print("База данных инициализирована")
-
-async def get_active_sources() -> List[dict]:
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT * FROM sources WHERE is_active = 1"
-        )
-        rows = await cursor.fetchall()
-        columns = [col[0] for col in cursor.description]
-        return [dict(zip(columns, row)) for row in rows]
+        print("✅ База данных инициализирована")
