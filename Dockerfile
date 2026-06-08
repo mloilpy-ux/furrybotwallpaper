@@ -5,6 +5,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY bot ./bot
+COPY . .
 
-CMD ["python", "bot/main.py"]
+# Создаём папку для базы
+RUN mkdir -p /app/bot_data
+
+CMD ["python", "main.py"]
