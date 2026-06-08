@@ -38,6 +38,8 @@ async def process_source_url(message: Message, state: FSMContext):
     source_type = None
     if "reddit.com" in url:
         source_type = "reddit"
+    elif "twitter.com" in url or "x.com" in url:
+    source_type = "twitter"
     elif "t.me" in url or url.startswith("@"):
         source_type = "telegram"
     else:
